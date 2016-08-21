@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"bytes"
@@ -23,10 +23,10 @@ func Must(data string, err error) string {
 	return data
 }
 
-type jsonEncoder struct{}
+type JsonEncoder struct{}
 
 // jsonEncoder is an Encoder that produces JSON-formatted responses.
-func (_ jsonEncoder) Encode(v ...interface{}) (string, error) {
+func (_ JsonEncoder) Encode(v ...interface{}) (string, error) {
 	var data interface{} = v
 	if v == nil {
 		// So that empty results produces `[]` and not `null`
@@ -38,10 +38,10 @@ func (_ jsonEncoder) Encode(v ...interface{}) (string, error) {
 	return string(b), err
 }
 
-type xmlEncoder struct{}
+type XmlEncoder struct{}
 
 // xmlEncoder is an Encoder that produces XML-formatted responses.
-func (_ xmlEncoder) Encode(v ...interface{}) (string, error) {
+func (_ XmlEncoder) Encode(v ...interface{}) (string, error) {
 	var buf bytes.Buffer
 	if _, err := buf.Write([]byte(xml.Header)); err != nil {
 		return "", err
@@ -62,10 +62,10 @@ func (_ xmlEncoder) Encode(v ...interface{}) (string, error) {
 	return buf.String(), nil
 }
 
-type textEncoder struct{}
+type TextEncoder struct{}
 
 // textEncoder is an Encoder that produces plain text-formatted responses.
-func (_ textEncoder) Encode(v ...interface{}) (string, error) {
+func (_ TextEncoder) Encode(v ...interface{}) (string, error) {
 	var buf bytes.Buffer
 	for _, v := range v {
 		if _, err := fmt.Fprintf(&buf, "%s\n", v); err != nil {

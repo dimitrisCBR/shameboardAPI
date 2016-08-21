@@ -8,6 +8,10 @@ import (
 
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/auth"
+	"./v1/api"
+
+	"github.com/dimitrisCBR/shameboardAPI/v1/utils"
+	"github.com/dimitrisCBR/shameboardAPI/v1/model"
 )
 
 // The one and only access token! In real-life scenarios, a more complex authentication
@@ -26,13 +30,13 @@ func init() {
 	m.Use(MapEncoder)
 	// Setup routes
 	r := martini.NewRouter()
-	r.Get(`/shames`, GetShames)
-	r.Get(`/shames/:id`, GetShames)
-	r.Post(`/shames`, AddShame)
-	r.Put(`/shames/:id`, UpdateShame)
-	r.Delete(`/shames/:id`, DeleteShame)
+	r.Get(`/shames`, api.GetShames)
+	r.Get(`/shames/:id`, api.GetShames)
+	r.Post(`/shames`, api.AddShame)
+	r.Put(`/shames/:id`, api.UpdateShame)
+	r.Delete(`/shames/:id`, api.DeleteShame)
 	// Inject database
-	m.MapTo(db, (*DB)(nil))
+	m.MapTo(model.ShamesDatabase, (*model.DB)(nil))
 	// Add the router action
 	m.Action(r.Handle)
 }
@@ -61,13 +65,13 @@ func MapEncoder(c martini.Context, w http.ResponseWriter, r *http.Request) {
 	// Inject the requested encoder
 	switch ft {
 	case ".xml":
-		c.MapTo(xmlEncoder{}, (*Encoder)(nil))
+		c.MapTo(utils.XmlEncoder{}, (*utils.Encoder)(nil))
 		w.Header().Set("Content-Type", "application/xml")
 	case ".text":
-		c.MapTo(textEncoder{}, (*Encoder)(nil))
+		c.MapTo(utils.TextEncoder{}, (*utils.Encoder)(nil))
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	default:
-		c.MapTo(jsonEncoder{}, (*Encoder)(nil))
+		c.MapTo(utils.JsonEncoder{}, (*utils.Encoder)(nil))
 		w.Header().Set("Content-Type", "application/json")
 	}
 }

@@ -1,10 +1,12 @@
-package main
+package model
 
 import (
 	"encoding/xml"
 	"errors"
 	"fmt"
 	"sync"
+
+	"github.com/dimitrisCBR/shameboardAPI/v1/errors"
 )
 
 var (
@@ -16,8 +18,8 @@ type DB interface {
 	Get(id int) *Shame
 	GetAll() []*Shame
 	Find(user, description string, year int) []*Shame
-	Add(a *Shame) (int, error)
-	Update(a *Shame) error
+	Add(a *Shame) (int, errors)
+	Update(a *Shame) errors
 	Delete(id int)
 }
 
@@ -29,16 +31,16 @@ type shamesDB struct {
 }
 
 // The one and only database instance.
-var db DB
+var ShamesDatabase DB
 
 func init() {
-	db = &shamesDB{
+	ShamesDatabase = &shamesDB{
 		m: make(map[int]*Shame),
 	}
 	// Fill the database
-	db.Add(&Shame{Id: 1, User: "Juan", Description: "Sucks", Year: 1986})
-	db.Add(&Shame{Id: 2, User: "William", Description: "Sucks 2", Year: 1990})
-	db.Add(&Shame{Id: 3, User: "Stefan", Description: "Sucks 3", Year: 1975})
+	ShamesDatabase.Add(&Shame{Id: 1, User: "Juan", Description: "Sucks", Year: 1986})
+	ShamesDatabase.Add(&Shame{Id: 2, User: "William", Description: "Sucks 2", Year: 1990})
+	ShamesDatabase.Add(&Shame{Id: 3, User: "Stefan", Description: "Sucks 3", Year: 1975})
 }
 
 // GetAll returns all albums from the database.
@@ -82,7 +84,7 @@ func (db *shamesDB) Get(id int) *Shame {
 }
 
 // Add creates a new album and returns its id, or an error.
-func (db *shamesDB) Add(a *Shame) (int, error) {
+func (db *shamesDB) Add(a *Shame) (int, errors) {
 	db.Lock()
 	defer db.Unlock()
 	// Return an error if band-title already exists
@@ -99,7 +101,7 @@ func (db *shamesDB) Add(a *Shame) (int, error) {
 
 // Update changes the album identified by the id. It returns an error if the
 // updated album is a duplicate.
-func (db *shamesDB) Update(a *Shame) error {
+func (db *shamesDB) Update(a *Shame) errors {
 	db.Lock()
 	defer db.Unlock()
 	if !db.isUnique(a) {
