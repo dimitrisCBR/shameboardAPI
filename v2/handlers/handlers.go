@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/dimitrisCBR/shameboardAPI/v2/model"
-	"github.com/dimitrisCBR/shameboardAPI/v2/data"
 	"io/ioutil"
 	"io"
 )
@@ -34,9 +33,9 @@ func Shame(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Shame:", shameId)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(data.Shames); err != nil {
-		panic(err)
-	}
+	//if err := json.NewEncoder(w).Encode(data.Shames); err != nil {
+	//	panic(err)
+	//}
 }
 
 func ShameCreate(w http.ResponseWriter, r *http.Request){
@@ -56,10 +55,10 @@ func ShameCreate(w http.ResponseWriter, r *http.Request){
 		}
 	}
 
-	echoedShame := data.RepoCreateShame(shame)
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(echoedShame); err != nil {
-		panic(err)
-	}
+	//echoedShame := data.RepoCreateShame(shame)
+	//w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	//w.WriteHeader(http.StatusCreated)
+	//if err := json.NewEncoder(w).Encode(echoedShame); err != nil {
+	//	panic(err)
+	//}
 }

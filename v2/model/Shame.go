@@ -1,7 +1,9 @@
 package model
 
+import  "gopkg.in/mgo.v2/bson"
+
 type Shame struct {
-	ID int `json:"id"`
+	ID bson.ObjectId `json:"id"`
 	Name string `json:"name"`
 	Description string `json:"description"`
 	Source User `json:"source"`
