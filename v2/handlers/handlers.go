@@ -8,6 +8,10 @@ import (
 	"github.com/dimitrisCBR/shameboardAPI/v2/model"
 	"io/ioutil"
 	"io"
+	"log"
+	"github.com/gorilla/context"
+	"gopkg.in/mgo.v2"
+	"github.com/dimitrisCBR/shameboardAPI/v2/database"
 )
 
 func Index (w http.ResponseWriter, r* http.Request){
@@ -15,10 +19,17 @@ func Index (w http.ResponseWriter, r* http.Request){
 }
 
 func Shames(w http.ResponseWriter, r *http.Request) {
-	shames := model.Shames{
-		model.Shame{Name: "bs"},
-		model.Shame{Name: "fff"},
+	db := context.Get(r,"database").(*mgo.Session)
+
+	// load the shames
+	var shames []*model.Shame
+	if err := db.DB(database.DB_NAME).C(database.COL_SHAMES).
+		Find(nil).Sort("-when").Limit(100).All(&shames); err != nil {
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
 	w.Header().Set("Content-type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(shames); err != nil {
@@ -55,10 +66,20 @@ func ShameCreate(w http.ResponseWriter, r *http.Request){
 		}
 	}
 
-	//echoedShame := data.RepoCreateShame(shame)
-	//w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	//w.WriteHeader(http.StatusCreated)
-	//if err := json.NewEncoder(w).Encode(echoedShame); err != nil {
-	//	panic(err)
-	//}
 }
+
+func recoverHandler(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("panic: %+v", err)
+				WriteError(w, ErrInternalServer)
+			}
+		}()
+
+		next.ServeHTTP(w, r)
+	}
+
+	return http.HandlerFunc(fn)
+}
+
