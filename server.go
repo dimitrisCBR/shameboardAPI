@@ -33,7 +33,7 @@ func main() {
 	mux.Handle("/user/{id}", handlers.JwtMiddleware.Handler(handlers.User(getDatabase()))).Methods("GET")
 
 	// Create a new user
-	mux.Handle("/user", handlers.JwtMiddleware.Handler(handlers.CreateUser(getDatabase()))).Methods("POST")
+	mux.Handle("/user/generate", handlers.JwtMiddleware.Handler(handlers.CreateUser(getDatabase()))).Methods("POST")
 
 	// Remove an existing user
 	mux.Handle("/user/{id}", handlers.JwtMiddleware.Handler(handlers.DeleteUser(getDatabase()))).Methods("DELETE")
