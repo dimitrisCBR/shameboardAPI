@@ -6,38 +6,37 @@ import (
 
 	// Third party packages
 	"gopkg.in/mgo.v2"
-	"goji.io"
-	"goji.io/pat"
 	"github.com/dimitrisCBR/shameboardAPI/v2/database"
 	"github.com/dimitrisCBR/shameboardAPI/v2/handlers"
+	"github.com/gorilla/mux"
 )
 
 func main() {
 	// Instantiate a new router
-	mux := goji.NewMux()
+	mux := mux.NewRouter()
 
-	mux.Handle(pat.Get("/get-token"), handlers.GetToken(getDatabase()))
+	mux.Handle("/get-token", handlers.GetToken(getDatabase())).Methods("GET")
 
 	// Get all users resource
-	mux.Handle(pat.Get("/allshames"), handlers.JwtMiddleware.Handler(handlers.GetShames(getDatabase())))
+	mux.Handle("/allshames", handlers.JwtMiddleware.Handler(handlers.GetShames(getDatabase()))).Methods("GET")
 
 	//Get shame by ID
-	mux.Handle(pat.Get("/shame/:id"), handlers.JwtMiddleware.Handler(handlers.Shame(getDatabase())))
+	mux.Handle("/shame/{id}", handlers.JwtMiddleware.Handler(handlers.Shame(getDatabase()))).Methods("GET")
 
 	//Create Shame
-	mux.Handle(pat.Post("/shame/generate"), handlers.JwtMiddleware.Handler(handlers.CreateShame(getDatabase())))
+	mux.Handle("/shame/generate", handlers.JwtMiddleware.Handler(handlers.CreateShame(getDatabase()))).Methods("POST")
 
 	// Get all users resource
-	mux.Handle(pat.Get("/allusers"), handlers.JwtMiddleware.Handler(handlers.GetUsers(getDatabase())))
+	mux.Handle("/allusers", handlers.JwtMiddleware.Handler(handlers.GetUsers(getDatabase()))).Methods("GET")
 
 	// Get a user resource
-	mux.Handle(pat.Get("/user/:id"), handlers.JwtMiddleware.Handler(handlers.User(getDatabase())))
+	mux.Handle("/user/:id", handlers.JwtMiddleware.Handler(handlers.User(getDatabase()))).Methods("GET")
 
 	// Create a new user
-	mux.Handle(pat.Post("/user"), handlers.JwtMiddleware.Handler(handlers.CreateUser(getDatabase())))
+	mux.Handle("/user", handlers.JwtMiddleware.Handler(handlers.CreateUser(getDatabase()))).Methods("POST")
 
 	// Remove an existing user
-	mux.Handle(pat.Delete("/user/:id"), handlers.JwtMiddleware.Handler(handlers.DeleteUser(getDatabase())))
+	mux.Handle("/user/:id", handlers.JwtMiddleware.Handler(handlers.DeleteUser(getDatabase()))).Methods("DELETE")
 
 	// Fire up the server
 	http.ListenAndServe("localhost:8888", mux)

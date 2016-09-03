@@ -9,6 +9,7 @@ import (
 	"github.com/dimitrisCBR/shameboardAPI/v2/database"
 	"gopkg.in/mgo.v2/bson"
 	"github.com/gorilla/mux"
+	"fmt"
 )
 
 
@@ -41,6 +42,7 @@ func Shame (db *mgo.Database) http.HandlerFunc {
 		// Grab id
 		var params = mux.Vars(r)
 		shameId := params["id"]
+		fmt.Println(shameId,params)
 
 		// Verify id is ObjectId, otherwise bail
 		if !bson.IsObjectIdHex(shameId) {

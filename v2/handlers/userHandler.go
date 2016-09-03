@@ -8,14 +8,12 @@ import (
 	"gopkg.in/mgo.v2"
 	"github.com/dimitrisCBR/shameboardAPI/v2/database"
 	"gopkg.in/mgo.v2/bson"
-	"goji.io"
-	"golang.org/x/net/context"
 	"github.com/gorilla/mux"
 )
 
 
-func GetUsers (db *mgo.Database) goji.HandlerFunc {
-	return func (context context.Context, w http.ResponseWriter, r *http.Request) {
+func GetUsers (db *mgo.Database) http.HandlerFunc {
+	return func ( w http.ResponseWriter, r *http.Request) {
 
 		// Stub user Array
 		users := model.Users{}
@@ -116,8 +114,8 @@ func CreateUser (db *mgo.Database) http.HandlerFunc {
 
 
 
-func DeleteUser (db *mgo.Database) goji.HandlerFunc {
-	return func (context context.Context, w http.ResponseWriter, r *http.Request) {
+func DeleteUser (db *mgo.Database) http.HandlerFunc {
+	return func (w http.ResponseWriter, r *http.Request) {
 
 // No - op
 	}
