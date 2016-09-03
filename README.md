@@ -1,8 +1,8 @@
 # shameboardAPI
 
-Basic REST API server written in go.
+**Basic REST API server written in go.**
 
-Supported endpoints:
+_Supported endpoints:_
 - GET /allshames - Returns all Shames
 - GET /shame/{ida} - Returns shame with provided ID
 - POST /shame/generate - Params: Body must contain valid Shame object - Creates a shame object
