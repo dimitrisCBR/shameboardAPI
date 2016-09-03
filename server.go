@@ -16,39 +16,28 @@ func main() {
 	// Instantiate a new router
 	mux := goji.NewMux()
 
+	mux.Handle(pat.Get("/get-token"), handlers.GetToken(getDatabase()))
 
 	// Get all users resource
-	mux.HandleFuncC(pat.Get("/allshames"), handlers.GetShames(getDatabase()))
+	mux.Handle(pat.Get("/allshames"), handlers.JwtMiddleware.Handler(handlers.GetShames(getDatabase())))
 
 	//Get shame by ID
-	mux.HandleFuncC(pat.Get("/shame/:id"), handlers.Shame(getDatabase()))
+	mux.Handle(pat.Get("/shame/:id"), handlers.JwtMiddleware.Handler(handlers.Shame(getDatabase())))
 
 	//Create Shame
-	mux.HandleFuncC(pat.Post("/shame/generate"), handlers.ShameCreate(getDatabase()))
+	mux.Handle(pat.Post("/shame/generate"), handlers.JwtMiddleware.Handler(handlers.CreateShame(getDatabase())))
 
-	//// Get all users resource
-	//r.Handle("/allusers", handlers.GetShames(getDatabase())).Methods("GET")
-	//
-	//// Get a user resource
-	//r.Handle("/user/:id", uc.GetUser).Methods("GET")
-	//
-	//// Create a new user
-	//r.Handle("/user", uc.CreateUser).Methods("POST")
-	//
-	//// Remove an existing user
-	//r.Handle("/user/:id", uc.RemoveUser).Methods("DELETE")
-	//
-	//// Get a ShameController instance
-	//sc := controllers.NewShameController(getDatabase())
-	//
-	//// Get a shame resource
-	//r.Handle("/shame/:id", sc.GetShame).Methods("GET")
-	//
-	//// Create a new shame
-	//r.Handle("/shame", sc.CreateShame).Methods("POST")
-	//
-	//// Remove an existing shame
-	//r.Handle("/shame/:id", sc.RemoveShame).Methods("DELETE")
+	// Get all users resource
+	mux.Handle(pat.Get("/allusers"), handlers.JwtMiddleware.Handler(handlers.GetUsers(getDatabase())))
+
+	// Get a user resource
+	mux.Handle(pat.Get("/user/:id"), handlers.JwtMiddleware.Handler(handlers.User(getDatabase())))
+
+	// Create a new user
+	mux.Handle(pat.Post("/user"), handlers.JwtMiddleware.Handler(handlers.CreateUser(getDatabase())))
+
+	// Remove an existing user
+	mux.Handle(pat.Delete("/user/:id"), handlers.JwtMiddleware.Handler(handlers.DeleteUser(getDatabase())))
 
 	// Fire up the server
 	http.ListenAndServe("localhost:8888", mux)
