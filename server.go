@@ -5,46 +5,53 @@ import (
 	"net/http"
 
 	// Third party packages
-	"github.com/julienschmidt/httprouter"
-	"github.com/dimitrisCBR/go-rest-tutorial/controllers"
 	"gopkg.in/mgo.v2"
-	"github.com/dimitrisCBR/go-rest-tutorial/database"
+	"goji.io"
+	"goji.io/pat"
+	"github.com/dimitrisCBR/shameboardAPI/v2/database"
+	"github.com/dimitrisCBR/shameboardAPI/v2/handlers"
 )
 
 func main() {
 	// Instantiate a new router
-	r := httprouter.New()
+	mux := goji.NewMux()
 
-	// Get a UserController instance
-	uc := controllers.NewUserController(getDatabase())
 
 	// Get all users resource
-	r.GET("/allusers", uc.GetUsers)
+	mux.HandleFuncC(pat.Get("/allshames"), handlers.GetShames(getDatabase()))
 
-	// Get a user resource
-	r.GET("/user/:id", uc.GetUser)
+	//Get shame by ID
+	mux.HandleFuncC(pat.Get("/shame/:id"), handlers.Shame(getDatabase()))
 
-	// Create a new user
-	r.POST("/user", uc.CreateUser)
+	//Create Shame
+	mux.HandleFuncC(pat.Post("/shame/generate"), handlers.ShameCreate(getDatabase()))
 
-	// Remove an existing user
-	r.DELETE("/user/:id", uc.RemoveUser)
-
-	// Get a ShameController instance
-	sc := controllers.NewShameController(getDatabase())
-
-	// Get a shame resource
-	r.GET("/shame/:id", sc.GetShame)
-
-	// Create a new shame
-	r.POST("/shame", sc.CreateShame)
-
-	// Remove an existing shame
-	r.DELETE("/shame/:id", sc.RemoveShame)
-
+	//// Get all users resource
+	//r.Handle("/allusers", handlers.GetShames(getDatabase())).Methods("GET")
+	//
+	//// Get a user resource
+	//r.Handle("/user/:id", uc.GetUser).Methods("GET")
+	//
+	//// Create a new user
+	//r.Handle("/user", uc.CreateUser).Methods("POST")
+	//
+	//// Remove an existing user
+	//r.Handle("/user/:id", uc.RemoveUser).Methods("DELETE")
+	//
+	//// Get a ShameController instance
+	//sc := controllers.NewShameController(getDatabase())
+	//
+	//// Get a shame resource
+	//r.Handle("/shame/:id", sc.GetShame).Methods("GET")
+	//
+	//// Create a new shame
+	//r.Handle("/shame", sc.CreateShame).Methods("POST")
+	//
+	//// Remove an existing shame
+	//r.Handle("/shame/:id", sc.RemoveShame).Methods("DELETE")
 
 	// Fire up the server
-	http.ListenAndServe("localhost:8888", r)
+	http.ListenAndServe("localhost:8888", mux)
 }
 
 // getSession creates a new mongo session and panics if connection error occurs

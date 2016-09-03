@@ -4,76 +4,147 @@ import (
 	"net/http"
 	"fmt"
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"github.com/dimitrisCBR/shameboardAPI/v2/model"
-	"io/ioutil"
-	"io"
 	"log"
-	"github.com/gorilla/context"
 	"gopkg.in/mgo.v2"
 	"github.com/dimitrisCBR/shameboardAPI/v2/database"
+	"gopkg.in/mgo.v2/bson"
+	"goji.io"
+	"golang.org/x/net/context"
+	"goji.io/pat"
 )
 
-func Index (w http.ResponseWriter, r* http.Request){
-	fmt.Fprintln(w, "Welcome")
-}
 
-func Shames(w http.ResponseWriter, r *http.Request) {
-	db := context.Get(r,"database").(*mgo.Session)
+func GetShames (db *mgo.Database) goji.HandlerFunc {
+	return func (context context.Context, w http.ResponseWriter, r *http.Request) {
 
-	// load the shames
-	var shames []*model.Shame
-	if err := db.DB(database.DB_NAME).C(database.COL_SHAMES).
-		Find(nil).Sort("-when").Limit(100).All(&shames); err != nil {
+		// Stub shame Array
+		shames := model.Shames{}
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(shames); err != nil {
-		panic(err)
-	}
-
-}
-
-func Shame(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	shameId := vars["shame_id"]
-	fmt.Fprintln(w, "Shame:", shameId)
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	//if err := json.NewEncoder(w).Encode(data.Shames); err != nil {
-	//	panic(err)
-	//}
-}
-
-func ShameCreate(w http.ResponseWriter, r *http.Request){
-	var shame model.Shame
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
-	if err != nil {
-		panic(err)
-	}
-	if err := r.Body.Close(); err != nil {
-		panic(err)
-	}
-	if err := json.Unmarshal(body, &shame); err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(422) // unprocessable entity
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
+		// Fetch shames
+		if err := db.C(database.COL_SHAMES).Find(nil).All(&shames); err != nil {
+			w.WriteHeader(404)
+			return
 		}
-	}
 
+		// Marshal provided interface into JSON structure
+		uj, _ := json.Marshal(shames)
+
+		// Write content-type, statuscode, payload
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(200)
+		w.Write(uj)
+	}
 }
+
+
+func Shame (db *mgo.Database) goji.HandlerFunc {
+	return func (context context.Context, w http.ResponseWriter, r *http.Request) {
+		// Grab id
+		shameId := pat.Param(context, "id")
+		fmt.Println(shameId)
+
+		// Verify id is ObjectId, otherwise bail
+		if !bson.IsObjectIdHex(shameId) {
+			w.WriteHeader(404)
+			ErrorWithJSON(w, "Nothing found with provided id", http.StatusBadRequest)
+			return
+		}
+
+		// Grab id
+		oid := bson.ObjectIdHex(shameId)
+
+		// Stub shame
+		shame := model.Shame{}
+
+		// Fetch user
+		if err := db.C(database.COL_SHAMES).FindId(oid).One(&shame); err != nil {
+			w.WriteHeader(404)
+			fmt.Println("not found in db")
+			return
+		}
+
+		// Marshal provided interface into JSON structure
+		returnedShames, _ := json.Marshal(shame)
+
+		// Write content-type, statuscode, payload
+		// Write content-type, statuscode, payload
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(200)
+		w.Write(returnedShames)
+
+	}
+}
+
+
+func ShameCreate (db *mgo.Database) goji.HandlerFunc {
+	return func (context context.Context, w http.ResponseWriter, r *http.Request) {
+
+		// Stub shame Array
+		shames := model.Shames{}
+
+		// Fetch shames
+		if err := db.C(database.COL_SHAMES).Find(nil).All(&shames); err != nil {
+			w.WriteHeader(404)
+			return
+		}
+
+		// Stub a shame to be populated from the body
+		shame := model.Shame{}
+
+		// Populate the shame data
+		err := json.NewDecoder(r.Body).Decode(&shame)
+		if(err != nil) {
+			ErrorWithJSON(w, "Error in the provided object", http.StatusBadRequest)
+			return
+		}
+
+		// Add an Id
+		shame.ID = bson.NewObjectId()
+
+		// Write the user to mongo
+		if err := db.C(database.COL_SHAMES).Insert(shame); err != nil {
+			if mgo.IsDup(err) {
+				ErrorWithJSON(w, "Book with this ISBN already exists", http.StatusBadRequest)
+				return
+			}
+
+			ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+			log.Println("Failed insert book: ", err)
+			return
+		}
+
+
+
+		// Fetch shames
+		if err := db.C(database.COL_SHAMES).Find(nil).All(&shames); err != nil {
+			w.WriteHeader(404)
+			return
+		}
+
+		// Marshal provided interface into JSON structure
+		returnedShames, _ := json.Marshal(shame)
+
+		// Write content-type, statuscode, payload
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(201)
+		w.Write(returnedShames)
+	}
+}
+
+func ErrorWithJSON(w http.ResponseWriter, message string, code int) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(code)
+	fmt.Fprintf(w, "{message: %q}", message)
+}
+
 
 func recoverHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
 				log.Printf("panic: %+v", err)
-				WriteError(w, ErrInternalServer)
+			//	WriteError(w, ErrInternalServer)
 			}
 		}()
 

@@ -60,8 +60,9 @@ func (uc UserController) GetUser(w http.ResponseWriter, r *http.Request, p httpr
 	fmt.Fprintf(w, "%s", uj)
 }
 
+
 // GetUser retrieves an individual user resource
-func (uc UserController) GetUsers(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (uc UserController) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	// Stub user
 	u := model.Users{}
@@ -82,7 +83,7 @@ func (uc UserController) GetUsers(w http.ResponseWriter, r *http.Request, p http
 }
 
 // CreateUser creates a new user resource
-func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Stub an user to be populated from the body
 	u := model.User{}
 
@@ -105,9 +106,9 @@ func (uc UserController) CreateUser(w http.ResponseWriter, r *http.Request, p ht
 }
 
 // RemoveUser removes an existing user resource
-func (uc UserController) RemoveUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (uc UserController) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	// Grab id
-	id := p.ByName("id")
+	id := r.FormValue("id")
 
 	// Verify id is ObjectId, otherwise bail
 	if !bson.IsObjectIdHex(id) {
