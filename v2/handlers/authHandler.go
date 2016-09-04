@@ -8,9 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var mySigningKey = []byte("dummyKey")
-
-func GetToken (database *mgo.Database) http.HandlerFunc {
+func GetToken (database *mgo.Database, signingKey []byte) http.HandlerFunc {
 	return func ( w http.ResponseWriter, r *http.Request) {
 		/* Create the token */
 		token := jwt.New(jwt.SigningMethodHS256)
@@ -22,16 +20,19 @@ func GetToken (database *mgo.Database) http.HandlerFunc {
 		claims["admin"] = true
 
 		/* Sign the token with our secret */
-		tokenString, _ := token.SignedString(mySigningKey)
+		tokenString, _ := token.SignedString(signingKey)
 
 		/* Finally, write the token to the browser window */
 		w.Write([]byte(tokenString))
 	}
 }
 
-var JwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
-	ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-		return mySigningKey, nil
-	},
-	SigningMethod: jwt.SigningMethodHS256,
-})
+
+func AuthMiddleWare(signingKey []byte) *jwtmiddleware.JWTMiddleware {
+	return jwtmiddleware.New(jwtmiddleware.Options{
+		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+			return signingKey, nil
+		},
+		SigningMethod: jwt.SigningMethodHS256,
+	})
+}

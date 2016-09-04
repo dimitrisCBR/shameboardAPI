@@ -23,3 +23,9 @@ _testmain.go
 *.test
 *.prof
 .idea
+/configuration.toml
+configuration.toml
+/configuration.go
+/mongo-conf.json
+/config
+/security-conf.json
