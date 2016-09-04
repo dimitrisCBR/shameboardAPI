@@ -29,7 +29,7 @@ var config MongoConfig
 
 func main() {
 
-	LoadMongoConfig("./mongo-conf.json")
+	LoadMongoConfig("./mongodatabase-conf.json")
 	LoadSecurityConfig("./security-conf.json")
 
 	fmt.Println(config)

@@ -29,3 +29,4 @@ configuration.toml
 /mongo-conf.json
 /config
 /security-conf.json
+/mongodatabase-conf.json
