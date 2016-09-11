@@ -60,7 +60,7 @@ func main() {
 	mux.Handle("/user/{id}", handlers.AuthMiddleWare(signKey).Handler(handlers.DeleteUser(getDatabase()))).Methods("DELETE")
 
 	// Fire up the server
-	http.ListenAndServe("localhost:8888", mux)
+	http.ListenAndServe(":8888", mux)
 }
 
 func LoadMongoConfig(path string) {
